@@ -82,6 +82,47 @@
               <option value="yes">Áno</option>
             </select>
           </label>
+
+          <label>
+            Pobyt / väzba na SR
+            <select id="residencySr" required>
+              <option value="yes">Áno</option>
+              <option value="no">Nie</option>
+            </select>
+          </label>
+
+          <label>
+            Počet detí
+            <input id="childrenCount" type="number" min="0" value="0" required />
+          </label>
+
+          <label>
+            Vek najmladšieho dieťaťa
+            <input id="youngestChildAge" type="number" min="0" max="30" value="0" required />
+          </label>
+
+          <label>
+            Počet členov domácnosti
+            <input id="householdMembers" type="number" min="1" value="1" required />
+          </label>
+
+          <label>
+            Mesačný čistý príjem domácnosti (EUR)
+            <input id="householdIncome" type="number" min="0" step="0.01" value="1300" required />
+          </label>
+
+          <label>
+            Mesačné náklady na bývanie (EUR)
+            <input id="housingCost" type="number" min="0" step="0.01" value="450" required />
+          </label>
+
+          <label>
+            Máš status ŤZP?
+            <select id="tzp" required>
+              <option value="no">Nie</option>
+              <option value="yes">Áno</option>
+            </select>
+          </label>
         </div>
 
         <div class="actions">
