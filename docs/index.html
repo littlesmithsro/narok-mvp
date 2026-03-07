@@ -22,14 +22,21 @@
   <main class="wrap">
     <section class="hero card-soft">
       <div>
-        <h1>Zisti, na čo máš nárok</h1>
-        <p>Jednoduchý checker inšpirovaný UK patternmi: jasné kroky, transparentné vstupy, orientačný výsledok.</p>
+        <h1>NAROK — od nápadu po realizáciu</h1>
+        <p>Praktický benefit checker pre SR: používateľ dá pár údajov, dostane prioritizovaný orientačný výsledok a konkrétne ďalšie kroky.</p>
       </div>
       <div class="hero-kpis">
         <div><strong>4 kroky</strong><span>bez zbytočného chaosu</span></div>
         <div><strong>Viac profilov</strong><span>zamestnanec / SZČO / nezamestnaný…</span></div>
         <div><strong>Akčný výstup</strong><span>čo treba doplniť</span></div>
       </div>
+    </section>
+
+    <section class="journey card-soft" aria-label="Roadmap">
+      <article><strong>1) Nápad</strong><span>Rýchly výpočet nárokov pre bežného človeka.</span></article>
+      <article><strong>2) MVP</strong><span>Jeden wizard, jasné otázky, orientačné výsledky.</span></article>
+      <article><strong>3) Validácia</strong><span>Overiť pravidlá + zbierať feedback používateľov.</span></article>
+      <article><strong>4) Scale</strong><span>Doplniť ďalšie dávky, API a produkčný audit.</span></article>
     </section>
 
     <section class="steps" aria-label="Kroky formulára">
@@ -148,6 +155,8 @@
         <div class="actions">
           <button type="button" id="prefillSzcoProfile" class="secondary">Predvyplniť: 5 rokov SZČO</button>
           <button type="button" id="prefillUnemployedProfile" class="secondary">Predvyplniť: nezamestnaný</button>
+          <button type="button" id="saveDraftBtn" class="secondary">Uložiť rozpracované</button>
+          <button type="button" id="loadDraftBtn" class="secondary">Načítať rozpracované</button>
           <button type="submit" id="submitBtn">Vypočítať nároky</button>
           <button type="button" id="exportPdfBtn" class="secondary hidden">Export PDF</button>
         </div>
