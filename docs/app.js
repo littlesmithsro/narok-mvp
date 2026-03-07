@@ -188,7 +188,9 @@ function renderQuestion() {
     renderReview();
   }
 
-  prevStepBtn.disabled = currentQuestion === 0;
+  const isFirst = currentQuestion === 0;
+  prevStepBtn.disabled = isFirst;
+  prevStepBtn.classList.toggle('hidden', isFirst);
   nextStepBtn.classList.toggle('hidden', inReview);
   submitBtn.classList.toggle('hidden', !inReview);
 }
