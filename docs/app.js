@@ -156,8 +156,26 @@ function renderReview() {
   reviewBox.innerHTML = `Situácia: <strong>${statusLabel(i.status)}</strong><br/>Nemocenské poistenie: <strong>${i.insured ? 'áno':'nie'}</strong><br/>Dni nemocenského poistenia: <strong>${i.sicknessDays2y}</strong><br/>Poistenie v nezamestnanosti: <strong>${i.hasUnemploymentInsurance ? 'áno':'nie'}</strong> · dni: <strong>${i.unemploymentDays4y}</strong><br/>Evidencia na úrade práce: <strong>${i.registeredJobseeker ? 'áno':'nie'}</strong>`;
 }
 
+function questionFieldId(labelEl) {
+  const control = labelEl.querySelector('select, input');
+  return control ? control.id : null;
+}
+
+function isQuestionRelevant(labelEl) {
+  const id = questionFieldId(labelEl);
+  const status = statusSelect.value;
+
+  if (id === 'hasSocialDebt') return status === 'szco';
+  if (id === 'registeredJobseeker') return status === 'unemployed';
+  if (id === 'unemploymentDays4y' || id === 'hasUnemploymentInsurance') {
+    return ['employee', 'szco', 'unemployed'].includes(status);
+  }
+
+  return true;
+}
+
 function visibleQuestions() {
-  return questions.filter((q) => q !== socialDebtWrap || statusSelect.value === 'szco');
+  return questions.filter((q) => isQuestionRelevant(q));
 }
 
 function updateStepDots(activeLabel) {
@@ -167,18 +185,20 @@ function updateStepDots(activeLabel) {
 
 function renderQuestion() {
   questions.forEach((q) => q.classList.add('hidden'));
-  const vq = visibleQuestions();
-  const safeIndex = Math.max(0, Math.min(vq.length - 1, currentQuestion));
-  currentQuestion = safeIndex;
-  if (vq[safeIndex]) {
-    vq[safeIndex].classList.remove('hidden');
-    updateStepDots(vq[safeIndex]);
-  }
-
-  const inReview = currentQuestion >= vq.length;
   document.querySelectorAll('.form-step').forEach((fs) => fs.classList.add('hidden'));
-  if (!inReview && vq[safeIndex]) {
-    vq[safeIndex].closest('.form-step').classList.remove('hidden');
+
+  const vq = visibleQuestions();
+  const inReview = currentQuestion >= vq.length;
+
+  if (!inReview) {
+    const safeIndex = Math.max(0, Math.min(vq.length - 1, currentQuestion));
+    currentQuestion = safeIndex;
+    const activeQuestion = vq[safeIndex];
+    if (activeQuestion) {
+      activeQuestion.classList.remove('hidden');
+      activeQuestion.closest('.form-step').classList.remove('hidden');
+      updateStepDots(activeQuestion);
+    }
   }
 
   const reviewStep = document.querySelector('.form-step[data-step="4"]');
@@ -196,8 +216,7 @@ function renderQuestion() {
 }
 
 function goNext() {
-  const vq = visibleQuestions();
-  if (currentQuestion < vq.length) currentQuestion += 1;
+  currentQuestion += 1;
   renderQuestion();
 }
 
@@ -207,6 +226,20 @@ function goPrev() {
 }
 
 statusSelect.addEventListener('change', () => {
+  const status = statusSelect.value;
+
+  if (status !== 'szco') {
+    document.getElementById('hasSocialDebt').value = 'no';
+  }
+  if (status !== 'unemployed') {
+    document.getElementById('registeredJobseeker').value = 'no';
+  }
+  if (!['employee', 'szco', 'unemployed'].includes(status)) {
+    document.getElementById('hasUnemploymentInsurance').value = 'no';
+    document.getElementById('unemploymentDays4y').value = 0;
+  }
+
+  currentQuestion = 0;
   syncConditionalFields();
   renderQuestion();
 });
