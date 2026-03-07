@@ -8,133 +8,154 @@
 </head>
 <body>
   <div class="bg"></div>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">NAROK</div>
+      <nav class="menu">
+        <a href="#form">Kalkulačka</a>
+        <a href="#results">Výsledky</a>
+      </nav>
+    </div>
+  </header>
+
   <main class="wrap">
-    <header class="hero">
-      <h1>NAROK</h1>
-      <p>Orientačná kalkulačka nároku pre Slovensko: PN, OČR, podpora v nezamestnanosti.</p>
-    </header>
+    <section class="hero card-soft">
+      <div>
+        <h1>Zisti, na čo máš nárok</h1>
+        <p>Jednoduchý checker inšpirovaný UK patternmi: jasné kroky, transparentné vstupy, orientačný výsledok.</p>
+      </div>
+      <div class="hero-kpis">
+        <div><strong>4 kroky</strong><span>bez zbytočného chaosu</span></div>
+        <div><strong>Viac profilov</strong><span>zamestnanec / SZČO / nezamestnaný…</span></div>
+        <div><strong>Akčný výstup</strong><span>čo treba doplniť</span></div>
+      </div>
+    </section>
 
-    <section class="card form-card">
-      <h2>Tvoje údaje (MVP v1.1)</h2>
+    <section class="steps" aria-label="Kroky formulára">
+      <span class="step active" data-dot="1">1. Profil</span>
+      <span class="step" data-dot="2">2. Poistenie</span>
+      <span class="step" data-dot="3">3. Domácnosť</span>
+      <span class="step" data-dot="4">4. Kontrola</span>
+    </section>
+
+    <section id="form" class="card form-card">
+      <div class="section-head">
+        <h2>Kalkulačka nárokov</h2>
+        <p class="muted">Vyplň údaje. Výsledok je orientačný, nie právne záväzný.</p>
+      </div>
+
       <form id="eligibilityForm">
-        <div class="grid">
-          <label>
-            Status
-            <select id="status" required>
-              <option value="szco">SZČO (živnostník)</option>
-              <option value="employee">Zamestnanec</option>
-            </select>
-          </label>
+        <fieldset class="group form-step" data-step="1">
+          <legend>1) Profil osoby</legend>
+          <div class="grid">
+            <label>
+              Aktuálna situácia
+              <select id="status" required>
+                <option value="employee">Zamestnanec</option>
+                <option value="szco">SZČO (živnostník)</option>
+                <option value="unemployed">Nezamestnaný</option>
+                <option value="parental">Rodič / rodičovská</option>
+                <option value="student">Študent</option>
+                <option value="other">Iné</option>
+              </select>
+            </label>
+            <label>
+              Pobyt / väzba na SR
+              <select id="residencySr" required>
+                <option value="yes">Áno</option>
+                <option value="no">Nie</option>
+              </select>
+            </label>
+          </div>
+        </fieldset>
 
-          <label>
-            Aktívne nemocenské poistenie
-            <select id="sicknessInsured" required>
-              <option value="yes">Áno</option>
-              <option value="no">Nie</option>
-            </select>
-          </label>
+        <fieldset class="group form-step hidden" data-step="2">
+          <legend>2) Poistenie a príjem</legend>
+          <div class="grid">
+            <label>
+              Aktívne nemocenské poistenie
+              <select id="sicknessInsured" required>
+                <option value="yes">Áno</option>
+                <option value="no">Nie</option>
+              </select>
+            </label>
+            <label>
+              Dni nemocenského poistenia za posledné 2 roky
+              <input id="sicknessDays2y" type="number" min="0" value="730" required />
+            </label>
+            <label id="socialDebtWrap">
+              Máš nedoplatky na sociálnom poistení?
+              <select id="hasSocialDebt" required>
+                <option value="no">Nie</option>
+                <option value="yes">Áno / neviem</option>
+              </select>
+            </label>
+            <label>
+              Priemerný mesačný vymeriavací základ (EUR)
+              <input id="monthlyBase" type="number" min="0" step="0.01" value="1300" required />
+            </label>
+            <label>
+              Koľko dní PN chceš rátať
+              <input id="pnDays" type="number" min="1" max="365" value="30" required />
+            </label>
+            <label>
+              Koľko dní OČR chceš rátať
+              <input id="ocrDays" type="number" min="1" max="365" value="14" required />
+            </label>
+            <label>
+              Mal(a) si poistenie v nezamestnanosti?
+              <select id="hasUnemploymentInsurance" required>
+                <option value="no">Nie</option>
+                <option value="yes">Áno</option>
+              </select>
+            </label>
+            <label>
+              Dni poistenia v nezamestnanosti za posledné 4 roky
+              <input id="unemploymentDays4y" type="number" min="0" value="0" required />
+            </label>
+            <label>
+              Si evidovaný(á) na úrade práce?
+              <select id="registeredJobseeker" required>
+                <option value="no">Nie</option>
+                <option value="yes">Áno</option>
+              </select>
+            </label>
+          </div>
+        </fieldset>
 
-          <label>
-            Dni nemocenského poistenia za posledné 2 roky
-            <input id="sicknessDays2y" type="number" min="0" value="730" required />
-          </label>
+        <fieldset class="group form-step hidden" data-step="3">
+          <legend>3) Domácnosť</legend>
+          <div class="grid">
+            <label>
+              Počet detí
+              <input id="childrenCount" type="number" min="0" value="0" required />
+            </label>
+          </div>
+        </fieldset>
 
-          <label>
-            Máš nedoplatky na sociálnom poistení?
-            <select id="hasSocialDebt" required>
-              <option value="no">Nie</option>
-              <option value="yes">Áno / neviem</option>
-            </select>
-          </label>
+        <fieldset class="group form-step hidden" data-step="4">
+          <legend>4) Kontrola pred výpočtom</legend>
+          <p class="muted">Skontroluj údaje a klikni na „Vypočítať nároky“.</p>
+          <div id="reviewBox" class="review-box muted"></div>
+        </fieldset>
 
-          <label>
-            Priemerný mesačný vymeriavací základ (EUR)
-            <input id="monthlyBase" type="number" min="0" step="0.01" value="1300" required />
-          </label>
-
-          <label>
-            Koľko dní PN chceš rátať
-            <input id="pnDays" type="number" min="1" max="365" value="30" required />
-          </label>
-
-          <label>
-            Koľko dní OČR chceš rátať
-            <input id="ocrDays" type="number" min="1" max="365" value="14" required />
-          </label>
-
-          <label>
-            Mal(a) si poistenie v nezamestnanosti?
-            <select id="hasUnemploymentInsurance" required>
-              <option value="no">Nie</option>
-              <option value="yes">Áno</option>
-            </select>
-          </label>
-
-          <label>
-            Dni poistenia v nezamestnanosti za posledné 4 roky
-            <input id="unemploymentDays4y" type="number" min="0" value="0" required />
-          </label>
-
-          <label>
-            Si evidovaný(á) na úrade práce?
-            <select id="registeredJobseeker" required>
-              <option value="no">Nie</option>
-              <option value="yes">Áno</option>
-            </select>
-          </label>
-
-          <label>
-            Pobyt / väzba na SR
-            <select id="residencySr" required>
-              <option value="yes">Áno</option>
-              <option value="no">Nie</option>
-            </select>
-          </label>
-
-          <label>
-            Počet detí
-            <input id="childrenCount" type="number" min="0" value="0" required />
-          </label>
-
-          <label>
-            Vek najmladšieho dieťaťa
-            <input id="youngestChildAge" type="number" min="0" max="30" value="0" required />
-          </label>
-
-          <label>
-            Počet členov domácnosti
-            <input id="householdMembers" type="number" min="1" value="1" required />
-          </label>
-
-          <label>
-            Mesačný čistý príjem domácnosti (EUR)
-            <input id="householdIncome" type="number" min="0" step="0.01" value="1300" required />
-          </label>
-
-          <label>
-            Mesačné náklady na bývanie (EUR)
-            <input id="housingCost" type="number" min="0" step="0.01" value="450" required />
-          </label>
-
-          <label>
-            Máš status ŤZP?
-            <select id="tzp" required>
-              <option value="no">Nie</option>
-              <option value="yes">Áno</option>
-            </select>
-          </label>
+        <div class="wizard-nav">
+          <button type="button" id="prevStep" class="secondary">← Späť</button>
+          <button type="button" id="nextStep" class="secondary">Ďalej →</button>
         </div>
 
         <div class="actions">
-          <button type="button" id="prefillSzcoProfile" class="secondary">Predvyplniť: 5 rokov SZČO (test)</button>
-          <button type="submit">Vypočítať nároky</button>
+          <button type="button" id="prefillSzcoProfile" class="secondary">Predvyplniť: 5 rokov SZČO</button>
+          <button type="button" id="prefillUnemployedProfile" class="secondary">Predvyplniť: nezamestnaný</button>
+          <button type="submit" id="submitBtn">Vypočítať nároky</button>
         </div>
       </form>
     </section>
 
     <section id="results" class="results"></section>
 
-    <section class="note">
+    <section class="note card-soft">
       <strong>Dôležité:</strong> Toto je orientačný MVP výpočet. Finálny nárok vždy potvrdzuje Sociálna poisťovňa / ÚPSVaR.
     </section>
   </main>
