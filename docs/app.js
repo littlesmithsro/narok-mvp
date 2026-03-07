@@ -109,9 +109,10 @@ function summaryCards(input, benefits) {
   const eligible = prioritized.filter((b) => b.score >= 100).length;
   const almost = prioritized.filter((b) => b.score >= 50 && b.score < 100).length;
   const top3 = prioritized.slice(0,3).map((b)=>`${b.name} (${EUR.format(estimatedPotential(b))})`).join(' · ');
+  const totalPotential = prioritized.reduce((sum, b) => sum + estimatedPotential(b), 0);
   const nextActions = prioritized.slice(0,2).flatMap((b)=>b.missing.slice(0,2).map((m)=>`${b.name}: ${m}`)).slice(0,3);
   const actionsHtml = nextActions.length ? `<ul class="missing">${nextActions.map((x)=>`<li>${x}</li>`).join('')}</ul>` : '<div class="muted">Žiadne kritické chýbajúce položky.</div>';
-  return `<article class="result-card summary"><h3>Profil nárokov — prehľad</h3><div class="muted">Situácia: <strong>${statusLabel(input.status)}</strong></div><div class="muted">Nárokov 100%: <strong>${eligible}</strong> · Almost: <strong>${almost}</strong></div><div class="muted">Priorita podľa potenciálu: <strong>${top3||'—'}</strong></div><div class="muted" style="margin-top:8px;"><strong>Odporúčané ďalšie kroky:</strong></div>${actionsHtml}</article>`;
+  return `<article class="result-card summary"><h3>Profil nárokov — prehľad</h3><div class="muted">Situácia: <strong>${statusLabel(input.status)}</strong></div><div class="muted">Potenciál, ktorý vieš získať (orientačne): <strong>${EUR.format(totalPotential)}</strong></div><div class="muted">Nárokov 100%: <strong>${eligible}</strong> · Almost: <strong>${almost}</strong></div><div class="muted">Priorita podľa potenciálu: <strong>${top3||'—'}</strong></div><div class="muted" style="margin-top:8px;"><strong>Odporúčané ďalšie kroky:</strong></div>${actionsHtml}</article>`;
 }
 
 const form = document.getElementById('eligibilityForm');
@@ -124,6 +125,7 @@ const prefillUnemployedBtn = document.getElementById('prefillUnemployedProfile')
 const prevStepBtn = document.getElementById('prevStep');
 const nextStepBtn = document.getElementById('nextStep');
 const submitBtn = document.getElementById('submitBtn');
+const exportPdfBtn = document.getElementById('exportPdfBtn');
 const dotEls = [...document.querySelectorAll('.step')];
 const questions = [...document.querySelectorAll('.form-step .grid > label')];
 let currentQuestion = 0;
@@ -248,6 +250,11 @@ form.addEventListener('submit', (e) => {
   const input = getInput();
   const prioritized = prioritizeBenefits(evaluateBenefits(input));
   results.innerHTML = [summaryCards(input, prioritized), ...prioritized.map((b, idx) => benefitCard(b, idx))].join('');
+  exportPdfBtn.classList.remove('hidden');
+});
+
+exportPdfBtn.addEventListener('click', () => {
+  window.print();
 });
 
 syncConditionalFields();
