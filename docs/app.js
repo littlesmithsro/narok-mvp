@@ -153,7 +153,7 @@ function getInput() {
 
 function renderReview() {
   const i = getInput();
-  reviewBox.innerHTML = `Situácia: <strong>${statusLabel(i.status)}</strong><br/>Nemocenské poistenie: <strong>${i.insured ? 'áno':'nie'}</strong><br/>Dni nemocenského poistenia: <strong>${i.sicknessDays2y}</strong><br/>Poistenie v nezamestnanosti: <strong>${i.hasUnemploymentInsurance ? 'áno':'nie'}</strong> · dni: <strong>${i.unemploymentDays4y}</strong><br/>Evidencia na úrade práce: <strong>${i.registeredJobseeker ? 'áno':'nie'}</strong>`;
+  reviewBox.innerHTML = `Situácia: <strong>${statusLabel(i.status)}</strong><br/>Nemocenské poistenie: <strong>${i.insured ? 'áno':'nie'}</strong><br/>Dni nemocenského poistenia: <strong>${i.sicknessDays2y}</strong><br/>Poistenie v nezamestnanosti: <strong>${i.hasUnemploymentInsurance ? 'áno':'nie'}</strong> · dni: <strong>${i.unemploymentDays4y}</strong><br/>Evidencia na úrade práce: <strong>${i.registeredJobseeker ? 'áno':'nie'}</strong><br/><span class="muted">Pozn.: pre dávku v nezamestnanosti je evidencia na úrade práce štandardná podmienka.</span>`;
 }
 
 function questionFieldId(labelEl) {
@@ -231,9 +231,13 @@ statusSelect.addEventListener('change', () => {
   if (status !== 'szco') {
     document.getElementById('hasSocialDebt').value = 'no';
   }
-  if (status !== 'unemployed') {
+
+  if (status === 'unemployed') {
+    document.getElementById('registeredJobseeker').value = 'yes';
+  } else {
     document.getElementById('registeredJobseeker').value = 'no';
   }
+
   if (!['employee', 'szco', 'unemployed'].includes(status)) {
     document.getElementById('hasUnemploymentInsurance').value = 'no';
     document.getElementById('unemploymentDays4y').value = 0;
