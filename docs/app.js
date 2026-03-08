@@ -18,6 +18,12 @@ const REQUIRED_DOCS = {
   ocr: ['Potvrdenie potreby OČR', 'Občiansky preukaz', 'Údaje o poistení'],
   unemployment: ['Doklad o skončení pracovného pomeru', 'Potvrdenie o evidencii na úrade práce', 'Občiansky preukaz'],
   child: ['Rodný list dieťaťa', 'Občiansky preukaz', 'Doklad o pobyte/väzbe na SR'],
+  parental: ['Rodný list dieťaťa', 'Občiansky preukaz', 'Rozhodnutia o súvisiacich dávkach (ak sú)'],
+  tzp: ['Lekárske správy / zdravotná dokumentácia', 'Komplexný posudok (ak existuje)', 'Občiansky preukaz'],
+  'material-need': ['Doklady o príjme celej domácnosti', 'Doklady o bývaní a nákladoch', 'Občiansky preukaz'],
+  housing: ['Nájomná zmluva / doklad o bývaní', 'Doklady o úhradách bývania', 'Doklady o príjme domácnosti'],
+  pension: ['Výpis z individuálneho účtu poistenca', 'Doklady o obdobiach poistenia', 'Občiansky preukaz'],
+  'child-benefit': ['Rodný list dieťaťa', 'Občiansky preukaz', 'Doklad o pobyte/väzbe na SR'],
 };
 
 const benefitDefinitions = [
