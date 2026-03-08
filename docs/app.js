@@ -10,7 +10,7 @@ const STATUS_LABELS = {
   other: 'Iné',
 };
 
-const RULES_VERSION = 'v1.2';
+const RULES_VERSION = 'v1.3';
 const RULES_UPDATED_AT = '2026-03-08';
 
 const REQUIRED_DOCS = {
@@ -300,7 +300,9 @@ function getInput() {
     insured: document.getElementById('sicknessInsured').value === 'yes',
     sicknessDays2y: Number(document.getElementById('sicknessDays2y').value || 0),
     hasSocialDebt: document.getElementById('hasSocialDebt').value === 'yes',
-    hasUnemploymentInsurance: document.getElementById('hasUnemploymentInsurance').value === 'yes',
+    hasUnemploymentInsurance: document.getElementById('status').value === 'employee'
+      ? true
+      : document.getElementById('hasUnemploymentInsurance').value === 'yes',
     unemploymentDays4y: Number(document.getElementById('unemploymentDays4y').value || 0),
     registeredJobseeker: document.getElementById('registeredJobseeker').value === 'yes',
     pnDays: Number(document.getElementById('pnDays').value || 0),
@@ -318,7 +320,7 @@ function applyInput(input) {
   document.getElementById('sicknessInsured').value = input.insured ? 'yes' : 'no';
   document.getElementById('sicknessDays2y').value = input.sicknessDays2y ?? 730;
   document.getElementById('hasSocialDebt').value = input.hasSocialDebt ? 'yes' : 'no';
-  document.getElementById('hasUnemploymentInsurance').value = input.hasUnemploymentInsurance ? 'yes' : 'no';
+  document.getElementById('hasUnemploymentInsurance').value = (input.status === 'employee' || input.hasUnemploymentInsurance) ? 'yes' : 'no';
   document.getElementById('unemploymentDays4y').value = input.unemploymentDays4y ?? 0;
   document.getElementById('registeredJobseeker').value = input.registeredJobseeker ? 'yes' : 'no';
   document.getElementById('pnDays').value = input.pnDays ?? 30;
@@ -334,11 +336,15 @@ function applyInput(input) {
 
 function renderReview() {
   const input = getInput();
+  const unemploymentInsuranceLabel = input.status === 'employee'
+    ? 'Poistenie v nezamestnanosti (zamestnanec): <strong>štandardne áno</strong>'
+    : `Poistenie v nezamestnanosti: <strong>${input.hasUnemploymentInsurance ? 'áno' : 'nie'}</strong>`;
+
   reviewBox.innerHTML = `
     Situácia: <strong>${statusLabel(input.status)}</strong><br/>
     Nemocenské poistenie: <strong>${input.insured ? 'áno' : 'nie'}</strong><br/>
     Dni nemocenského poistenia: <strong>${input.sicknessDays2y}</strong><br/>
-    Poistenie v nezamestnanosti: <strong>${input.hasUnemploymentInsurance ? 'áno' : 'nie'}</strong> · dni: <strong>${input.unemploymentDays4y}</strong><br/>
+    ${unemploymentInsuranceLabel} · dni: <strong>${input.unemploymentDays4y}</strong><br/>
     Evidencia na úrade práce: <strong>${input.registeredJobseeker ? 'áno' : 'nie'}</strong><br/>
     <span class="muted">Pozn.: pre dávku v nezamestnanosti je evidencia na úrade práce štandardná podmienka.</span>
   `;
@@ -355,7 +361,10 @@ function isQuestionRelevant(labelEl) {
 
   if (id === 'hasSocialDebt') return status === 'szco';
   if (id === 'registeredJobseeker') return status === 'unemployed';
-  if (id === 'unemploymentDays4y' || id === 'hasUnemploymentInsurance') {
+  if (id === 'hasUnemploymentInsurance') {
+    return ['szco', 'unemployed'].includes(status);
+  }
+  if (id === 'unemploymentDays4y') {
     return ['employee', 'szco', 'unemployed'].includes(status);
   }
 
@@ -436,6 +445,16 @@ statusSelect.addEventListener('change', () => {
     document.getElementById('registeredJobseeker').value = 'yes';
   } else {
     document.getElementById('registeredJobseeker').value = 'no';
+  }
+
+  // Konzistentné defaulty podľa typu situácie
+  if (status === 'employee') {
+    // zamestnanec je typicky povinne poistený v nezamestnanosti
+    document.getElementById('hasUnemploymentInsurance').value = 'yes';
+  }
+  if (status === 'szco') {
+    // SZČO typicky nie je poistená v nezamestnanosti, iba dobrovoľne
+    document.getElementById('hasUnemploymentInsurance').value = 'no';
   }
 
   if (!['employee', 'szco', 'unemployed'].includes(status)) {
