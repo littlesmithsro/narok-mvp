@@ -10,6 +10,16 @@ const STATUS_LABELS = {
   other: 'Iné',
 };
 
+const RULES_VERSION = 'v1.2';
+const RULES_UPDATED_AT = '2026-03-08';
+
+const REQUIRED_DOCS = {
+  pn: ['Potvrdenie o PN od lekára', 'Občiansky preukaz', 'Údaje o poistení (Sociálna poisťovňa)'],
+  ocr: ['Potvrdenie potreby OČR', 'Občiansky preukaz', 'Údaje o poistení'],
+  unemployment: ['Doklad o skončení pracovného pomeru', 'Potvrdenie o evidencii na úrade práce', 'Občiansky preukaz'],
+  child: ['Rodný list dieťaťa', 'Občiansky preukaz', 'Doklad o pobyte/väzbe na SR'],
+};
+
 const benefitDefinitions = [
   {
     id: 'pn',
@@ -173,6 +183,16 @@ function statusLabel(status) {
   return STATUS_LABELS[status] || status;
 }
 
+function verdictFromScore(score) {
+  if (score >= 85) return { label: 'Vysoká šanca', cls: 'ok' };
+  if (score >= 55) return { label: 'Stredná šanca', cls: 'warn' };
+  return { label: 'Nízka šanca', cls: 'bad' };
+}
+
+function docsForBenefit(benefitId) {
+  return REQUIRED_DOCS[benefitId] || ['Občiansky preukaz', 'Doklad o situácii', 'Potvrdenie relevantné k dávke'];
+}
+
 function evaluateBenefits(input) {
   return benefitDefinitions.map((definition) => {
     const out = definition.evaluate(input);
@@ -235,6 +255,12 @@ function summaryCards(input, benefits) {
     .join(' · ');
 
   const totalPotential = prioritized.reduce((sum, benefit) => sum + estimatedPotential(benefit), 0);
+  const topBenefit = prioritized[0];
+  const verdict = topBenefit ? verdictFromScore(topBenefit.score) : null;
+  const docItems = topBenefit
+    ? docsForBenefit(topBenefit.id).map((doc) => `<li>${doc}</li>`).join('')
+    : '<li>Vyplň formulár pre odporúčanie dokladov.</li>';
+
   const nextActions = prioritized
     .slice(0, 2)
     .flatMap((benefit) => benefit.missing.slice(0, 2).map((m) => `${benefit.name}: ${m}`))
@@ -245,13 +271,16 @@ function summaryCards(input, benefits) {
     : '<div class="muted">Žiadne kritické chýbajúce položky.</div>';
 
   return `<article class="result-card summary">
-    <h3>Profil nárokov — prehľad</h3>
+    <div class="row-between"><h3>Profil nárokov — prehľad</h3><span class="pill warn">Pravidlá ${RULES_VERSION} · ${RULES_UPDATED_AT}</span></div>
     <div class="muted">Situácia: <strong>${statusLabel(input.status)}</strong></div>
     <div class="muted">Potenciál, ktorý vieš získať (orientačne): <strong>${EUR.format(totalPotential)}</strong></div>
     <div class="muted">Nárokov 100%: <strong>${eligible}</strong> · Almost: <strong>${almost}</strong></div>
     <div class="muted">Priorita podľa potenciálu: <strong>${top3 || '—'}</strong></div>
+    <div class="muted" style="margin-top:8px;"><strong>TOP dávka:</strong> ${topBenefit ? topBenefit.name : '—'} ${verdict ? `<span class="pill ${verdict.cls}" style="margin-left:6px;">${verdict.label}</span>` : ''}</div>
     <div class="muted" style="margin-top:8px;"><strong>Odporúčané ďalšie kroky:</strong></div>
     ${actionsHtml}
+    <div class="muted" style="margin-top:8px;"><strong>Checklist dokladov pre TOP dávku:</strong></div>
+    <ul class="missing">${docItems}</ul>
   </article>`;
 }
 
