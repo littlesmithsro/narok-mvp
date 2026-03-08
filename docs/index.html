@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NAROK MVP — kalkulačka nárokov</title>
+  <title>NAROK — zisti, na čo môžeš mať nárok</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
@@ -22,21 +22,21 @@
   <main class="wrap">
     <section class="hero card-soft">
       <div>
-        <h1>NAROK — od nápadu po realizáciu</h1>
-        <p>Praktický benefit checker pre SR: používateľ dá pár údajov, dostane prioritizovaný orientačný výsledok a konkrétne ďalšie kroky.</p>
+        <h1>Zisti, na aké dávky môžeš mať nárok</h1>
+        <p>Za 2–3 minúty dostaneš orientačný výsledok + jasné kroky, čo urobiť ďalej. Bez zložitého úradníckeho jazyka.</p>
       </div>
       <div class="hero-kpis">
-        <div><strong>4 kroky</strong><span>bez zbytočného chaosu</span></div>
-        <div><strong>Viac profilov</strong><span>zamestnanec / SZČO / nezamestnaný…</span></div>
-        <div><strong>Akčný výstup</strong><span>čo treba doplniť</span></div>
+        <div><strong>2–3 min</strong><span>rýchly orientačný prehľad</span></div>
+        <div><strong>Jednoduché otázky</strong><span>zrozumiteľne pre bežného človeka</span></div>
+        <div><strong>Konkrétne kroky</strong><span>čo riešiť hneď teraz</span></div>
       </div>
     </section>
 
-    <section class="journey card-soft" aria-label="Roadmap">
-      <article><strong>1) Nápad</strong><span>Rýchly výpočet nárokov pre bežného človeka.</span></article>
-      <article><strong>2) MVP</strong><span>Jeden wizard, jasné otázky, orientačné výsledky.</span></article>
-      <article><strong>3) Validácia</strong><span>Overiť pravidlá + zbierať feedback používateľov.</span></article>
-      <article><strong>4) Scale</strong><span>Doplniť ďalšie dávky, API a produkčný audit.</span></article>
+    <section class="journey card-soft" aria-label="Ako to funguje">
+      <article><strong>1) Vyplníš údaje</strong><span>Krátke otázky o tvojej situácii.</span></article>
+      <article><strong>2) Spočítame šance</strong><span>Orientačné skóre pre jednotlivé dávky.</span></article>
+      <article><strong>3) Zobrazíme priority</strong><span>Čo sa oplatí riešiť ako prvé.</span></article>
+      <article><strong>4) Dostaneš kroky</strong><span>Konkrétne „čo spraviť teraz“.</span></article>
     </section>
 
     <section class="steps" aria-label="Kroky formulára">
@@ -49,7 +49,7 @@
     <section id="form" class="card form-card">
       <div class="section-head">
         <h2>Kalkulačka nárokov</h2>
-        <p class="muted">Vyplň údaje. Výsledok je orientačný, nie právne záväzný.</p>
+        <p class="muted">Vyplň údaje jednoduchým jazykom. Výsledok je orientačný (finálny nárok potvrdzuje úrad/poisťovňa).</p>
       </div>
 
       <form id="eligibilityForm">
@@ -99,7 +99,8 @@
               </select>
             </label>
             <label>
-              Priemerný mesačný vymeriavací základ (EUR)
+              Tvoj priemerný hrubý mesačný príjem (v €)
+              <small class="hint">Ak nevieš presne, použi orientačný priemer za posledné mesiace.</small>
               <input id="monthlyBase" type="number" min="0" step="0.01" value="1300" required />
             </label>
             <label>
@@ -170,6 +171,6 @@
     </section>
   </main>
 
-  <script src="./app.js?v=20260308-1"></script>
+  <script src="./app.js?v=20260308-2"></script>
 </body>
 </html>
