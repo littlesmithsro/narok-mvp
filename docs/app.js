@@ -1,5 +1,5 @@
 const EUR = new Intl.NumberFormat('sk-SK', { style: 'currency', currency: 'EUR' });
-const STORAGE_KEY = 'narok-mvp-input-v2';
+const STORAGE_KEY = 'narok-mvp-input-v3';
 
 const STATUS_LABELS = {
   employee: 'Zamestnanec',
@@ -10,26 +10,22 @@ const STATUS_LABELS = {
   other: 'Iné',
 };
 
-const RULES_VERSION = 'v1.5';
-const RULES_UPDATED_AT = '2026-03-09';
-
-const REQUIRED_DOCS = {
-  pn: ['Potvrdenie o PN od lekára', 'Občiansky preukaz', 'Údaje o poistení (Sociálna poisťovňa)'],
-  ocr: ['Potvrdenie potreby OČR', 'Občiansky preukaz', 'Údaje o poistení'],
-  unemployment: ['Doklad o skončení pracovného pomeru', 'Potvrdenie o evidencii na úrade práce', 'Občiansky preukaz'],
-  child: ['Rodný list dieťaťa', 'Občiansky preukaz', 'Doklad o pobyte/väzbe na SR'],
-  parental: ['Rodný list dieťaťa', 'Občiansky preukaz', 'Rozhodnutia o súvisiacich dávkach (ak sú)'],
-  tzp: ['Lekárske správy / zdravotná dokumentácia', 'Komplexný posudok (ak existuje)', 'Občiansky preukaz'],
-  'material-need': ['Doklady o príjme celej domácnosti', 'Doklady o bývaní a nákladoch', 'Občiansky preukaz'],
-  housing: ['Nájomná zmluva / doklad o bývaní', 'Doklady o úhradách bývania', 'Doklady o príjme domácnosti'],
-  pension: ['Výpis z individuálneho účtu poistenca', 'Doklady o obdobiach poistenia', 'Občiansky preukaz'],
-  'child-benefit': ['Rodný list dieťaťa', 'Občiansky preukaz', 'Doklad o pobyte/väzbe na SR'],
+const STATUS_GUIDANCE = {
+  employee: 'Typicky dáva zmysel PN, OČR a podľa situácie aj nezamestnanosť.',
+  szco: 'Pri SZČO najviac rozhoduje poistenie, dni poistenia a nedoplatky.',
+  unemployed: 'Pre dávku v nezamestnanosti je kritická evidencia na úrade práce a poistenie.',
+  parental: 'Najviac zmysluplné sú rodinné a rodičovské podpory.',
+  student: 'Študent má zvyčajne menej klasických dávkových nárokov, ale môže mať špecifické podpory.',
+  other: 'Pozri najmä všeobecné podmienky viazané na poistenie, deti a väzbu na SR.',
 };
 
 const benefitDefinitions = [
   {
     id: 'pn',
     name: 'PN (nemocenské)',
+    institution: 'Sociálna poisťovňa',
+    action: 'Over si podmienky poistenia a priprav potvrdenie o PN a údaje o poistení.',
+    formHint: 'Typicky riešené cez Sociálnu poisťovňu / zamestnávateľa podľa situácie.',
     evaluate(input) {
       let score = 0;
       const missing = [];
@@ -43,7 +39,7 @@ const benefitDefinitions = [
       if (!input.insured) missing.push('Aktívne nemocenské poistenie');
       if (input.sicknessDays2y < 270) missing.push(`Doplniť dni poistenia (${input.sicknessDays2y}/270)`);
       if (input.status === 'szco' && input.hasSocialDebt) missing.push('Vysporiadať nedoplatky na sociálnom poistení');
-      if (!['employee', 'szco'].includes(input.status)) missing.push('PN/OČR je typicky viazaná na aktívne nemocenské poistenie');
+      if (!['employee', 'szco'].includes(input.status)) missing.push('PN je najčastejšie viazaná na aktívne nemocenské poistenie');
 
       const eligible = score >= 100;
       const dvz = dailyBase(input.monthlyBase);
@@ -59,7 +55,7 @@ const benefitDefinitions = [
         estimateMonthly: total,
         estimateTotal: total,
         extra: eligible
-          ? `Odhad za ${input.pnDays} dní: ${EUR.format(total)}`
+          ? `Orientačný odhad za ${input.pnDays} dní: ${EUR.format(total)}`
           : 'Orientačný výpočet po splnení podmienok.',
       };
     },
@@ -67,6 +63,9 @@ const benefitDefinitions = [
   {
     id: 'ocr',
     name: 'OČR',
+    institution: 'Sociálna poisťovňa',
+    action: 'Priprav si potvrdenie o potrebe starostlivosti a skontroluj nemocenské poistenie.',
+    formHint: 'Najčastejšie cez Sociálnu poisťovňu, pri zamestnancovi aj cez zamestnávateľa.',
     evaluate(input) {
       let score = 0;
       const missing = [];
@@ -80,7 +79,7 @@ const benefitDefinitions = [
       if (!input.insured) missing.push('Aktívne nemocenské poistenie');
       if (input.sicknessDays2y < 270) missing.push(`Doplniť dni poistenia (${input.sicknessDays2y}/270)`);
       if (input.status === 'szco' && input.hasSocialDebt) missing.push('Vysporiadať nedoplatky na sociálnom poistení');
-      if (!['employee', 'szco'].includes(input.status)) missing.push('PN/OČR je typicky viazaná na aktívne nemocenské poistenie');
+      if (!['employee', 'szco'].includes(input.status)) missing.push('OČR je typicky viazaná na nemocenské poistenie');
 
       const eligible = score >= 100;
       const dvz = dailyBase(input.monthlyBase);
@@ -93,7 +92,7 @@ const benefitDefinitions = [
         estimateMonthly: total,
         estimateTotal: total,
         extra: eligible
-          ? `Odhad za ${cappedDays} dní: ${EUR.format(total)}`
+          ? `Orientačný odhad za ${cappedDays} dní: ${EUR.format(total)}`
           : 'MVP režim: krátka OČR do 14 dní.',
       };
     },
@@ -101,6 +100,9 @@ const benefitDefinitions = [
   {
     id: 'unemployment',
     name: 'Podpora v nezamestnanosti',
+    institution: 'Sociálna poisťovňa + úrad práce',
+    action: 'Ak ešte nie si evidovaný, prvý krok je evidencia na úrade práce. Potom rieš žiadosť o dávku.',
+    formHint: 'Treba mať evidenciu na úrade práce a splniť podmienku poistenia v nezamestnanosti.',
     evaluate(input) {
       let score = 0;
       const missing = [];
@@ -109,7 +111,7 @@ const benefitDefinitions = [
       score += input.hasUnemploymentInsurance ? 30 : 0;
       score += scoreByRatio(input.unemploymentDays4y, 730, 30);
 
-      if (input.status !== 'unemployed') missing.push('Pre dávku v nezamestnanosti je potrebná evidencia na úrade práce (profil: Nezamestnaný)');
+      if (input.status !== 'unemployed') missing.push('Pre dávku v nezamestnanosti býva potrebný profil nezamestnaného');
       if (!input.registeredJobseeker) missing.push('Evidencia na úrade práce');
       if (!input.hasUnemploymentInsurance) missing.push('Poistenie v nezamestnanosti');
       if (input.unemploymentDays4y < 730) missing.push(`Doplniť dni poistenia (${input.unemploymentDays4y}/730)`);
@@ -125,14 +127,17 @@ const benefitDefinitions = [
         estimateMonthly: monthly,
         estimateTotal: monthly * months,
         extra: eligible
-          ? `Trvanie: ${months} mesiacov · Celkom: ${EUR.format(monthly * months)}`
-          : 'Štandardne 6 mesiacov po splnení podmienok (orientačné, finálne rozhoduje Sociálna poisťovňa).',
+          ? `Orientačne ${EUR.format(monthly)} mesačne na ${months} mesiacov.`
+          : 'Štandardne 6 mesiacov po splnení podmienok.',
       };
     },
   },
   {
     id: 'child',
     name: 'Prídavok na dieťa',
+    institution: 'ÚPSVaR',
+    action: 'Skontroluj, či spĺňaš podmienku nezaopatreného dieťaťa a priprav si údaje o dieťati.',
+    formHint: 'Základná rodinná podpora viazaná na dieťa a väzbu na SR.',
     evaluate(input) {
       let score = 0;
       const missing = [];
@@ -141,36 +146,38 @@ const benefitDefinitions = [
       score += input.residencySr ? 30 : 0;
 
       if (input.childrenCount <= 0) missing.push('Mať nezaopatrené dieťa');
-      if (!input.residencySr) missing.push('Pobyt/väzba na SR');
+      if (!input.residencySr) missing.push('Pobyt / väzba na SR');
+
+      const monthly = input.childrenCount > 0 ? 60 * input.childrenCount : null;
 
       return {
         score,
         missing,
-        estimateMonthly: null,
-        estimateTotal: null,
-        extra: 'Suma podľa aktuálnej sadzby štátu.',
+        estimateMonthly: monthly,
+        estimateTotal: monthly,
+        extra: input.childrenCount > 0
+          ? `Pri ${input.childrenCount} dieťati/detoch orientačne ${EUR.format(monthly)} mesačne.`
+          : 'Suma závisí od počtu detí a podmienok.',
       };
     },
   },
 ];
 
 const form = document.getElementById('eligibilityForm');
-const results = document.getElementById('results');
-const statusSelect = document.getElementById('status');
+const resultsShell = document.getElementById('results');
+const resultsSummary = document.getElementById('resultsSummary');
+const resultsList = document.getElementById('resultsList');
+const leadCta = document.getElementById('leadCta');
+const resultsActions = document.getElementById('resultsActions');
+const statusInput = document.getElementById('status');
+const statusChoices = [...document.querySelectorAll('.choice-pill')];
 const socialDebtWrap = document.getElementById('socialDebtWrap');
-const reviewBox = document.getElementById('reviewBox');
+const registeredJobseekerWrap = document.getElementById('registeredJobseekerWrap');
 const prefillSzcoBtn = document.getElementById('prefillSzcoProfile');
 const prefillUnemployedBtn = document.getElementById('prefillUnemployedProfile');
-const prevStepBtn = document.getElementById('prevStep');
-const nextStepBtn = document.getElementById('nextStep');
-const submitBtn = document.getElementById('submitBtn');
-const exportPdfBtn = document.getElementById('exportPdfBtn');
 const saveDraftBtn = document.getElementById('saveDraftBtn');
 const loadDraftBtn = document.getElementById('loadDraftBtn');
-const dotEls = [...document.querySelectorAll('.step')];
-const questions = [...document.querySelectorAll('.form-step .grid > label')];
-
-let currentQuestion = 0;
+const exportPdfBtn = document.getElementById('exportPdfBtn');
 
 function dailyBase(monthlyBase) {
   return (monthlyBase * 12) / 365;
@@ -186,24 +193,20 @@ function scoreByRatio(current, target, weight) {
   return (ratio / 100) * weight;
 }
 
-function statusFromScore(score) {
-  if (score >= 100) return { label: 'Eligible', cls: 'ok' };
-  if (score >= 50) return { label: 'Almost', cls: 'warn' };
-  return { label: 'Low', cls: 'bad' };
-}
-
 function statusLabel(status) {
   return STATUS_LABELS[status] || status;
 }
 
-function verdictFromScore(score) {
-  if (score >= 85) return { label: 'Vysoká šanca', cls: 'ok' };
-  if (score >= 55) return { label: 'Stredná šanca', cls: 'warn' };
+function statusFromScore(score) {
+  if (score >= 100) return { label: 'Vysoká šanca', cls: 'ok' };
+  if (score >= 60) return { label: 'Stredná šanca', cls: 'warn' };
   return { label: 'Nízka šanca', cls: 'bad' };
 }
 
-function docsForBenefit(benefitId) {
-  return REQUIRED_DOCS[benefitId] || ['Občiansky preukaz', 'Doklad o situácii', 'Potvrdenie relevantné k dávke'];
+function estimatedPotential(benefit) {
+  return typeof benefit.estimateTotal === 'number' && Number.isFinite(benefit.estimateTotal)
+    ? benefit.estimateTotal
+    : 0;
 }
 
 function evaluateBenefits(input) {
@@ -212,6 +215,9 @@ function evaluateBenefits(input) {
     return {
       id: definition.id,
       name: definition.name,
+      institution: definition.institution,
+      action: definition.action,
+      formHint: definition.formHint,
       score: clamp(Math.round(out.score || 0)),
       missing: out.missing || [],
       estimateMonthly: out.estimateMonthly,
@@ -219,12 +225,6 @@ function evaluateBenefits(input) {
       extra: out.extra || '',
     };
   });
-}
-
-function estimatedPotential(benefit) {
-  return typeof benefit.estimateTotal === 'number' && Number.isFinite(benefit.estimateTotal)
-    ? benefit.estimateTotal
-    : 0;
 }
 
 function prioritizeBenefits(benefits) {
@@ -235,81 +235,17 @@ function prioritizeBenefits(benefits) {
   });
 }
 
-function benefitCard(benefit, idx = 0) {
-  const status = statusFromScore(benefit.score);
-  const missing = benefit.missing.length
-    ? `<ul class="missing">${benefit.missing.slice(0, 4).map((m) => `<li>${m}</li>`).join('')}</ul>`
-    : '<div class="muted">Bez chýbajúcich položiek.</div>';
-
-  const amount = typeof benefit.estimateMonthly === 'number'
-    ? `<div class="muted">Mesačne (odhad): <strong>${EUR.format(benefit.estimateMonthly)}</strong></div>`
-    : '';
-
-  const priorityPill = idx < 3 ? `<span class="pill warn" style="margin-left:6px;">TOP ${idx + 1}</span>` : '';
-
-  return `<article class="result-card">
-    <div class="row-between"><h3>${benefit.name}</h3><div><span class="pill ${status.cls}">${status.label}</span>${priorityPill}</div></div>
-    <div class="progress-wrap"><div class="progress"><span style="width:${benefit.score}%"></span></div><div class="progress-text"><strong>${benefit.score}%</strong></div></div>
-    ${amount}
-    <div class="muted">Potenciál celkom: <strong>${EUR.format(estimatedPotential(benefit))}</strong></div>
-    <div class="muted">${benefit.extra}</div>
-    <div class="muted"><strong>Čo chýba:</strong></div>
-    ${missing}
-  </article>`;
-}
-
-function summaryCards(input, benefits) {
-  const prioritized = prioritizeBenefits(benefits);
-  const eligible = prioritized.filter((benefit) => benefit.score >= 100).length;
-  const almost = prioritized.filter((benefit) => benefit.score >= 50 && benefit.score < 100).length;
-  const top3 = prioritized
-    .slice(0, 3)
-    .map((benefit) => `${benefit.name} (${EUR.format(estimatedPotential(benefit))})`)
-    .join(' · ');
-
-  const totalPotential = prioritized.reduce((sum, benefit) => sum + estimatedPotential(benefit), 0);
-  const topBenefit = prioritized[0];
-  const verdict = topBenefit ? verdictFromScore(topBenefit.score) : null;
-  const docItems = topBenefit
-    ? docsForBenefit(topBenefit.id).map((doc) => `<li>${doc}</li>`).join('')
-    : '<li>Vyplň formulár pre odporúčanie dokladov.</li>';
-
-  const nextActions = prioritized
-    .slice(0, 2)
-    .flatMap((benefit) => benefit.missing.slice(0, 2).map((m) => `${benefit.name}: ${m}`))
-    .slice(0, 3);
-
-  const actionsHtml = nextActions.length
-    ? `<ul class="missing">${nextActions.map((item) => `<li>${item}</li>`).join('')}</ul>`
-    : '<div class="muted">Žiadne kritické chýbajúce položky.</div>';
-
-  return `<article class="result-card summary">
-    <div class="row-between"><h3>Profil nárokov — prehľad</h3><span class="pill warn">Pravidlá ${RULES_VERSION} · ${RULES_UPDATED_AT}</span></div>
-    <div class="muted">Situácia: <strong>${statusLabel(input.status)}</strong></div>
-    <div class="muted">Potenciál, ktorý vieš získať (orientačne): <strong>${EUR.format(totalPotential)}</strong></div>
-    <div class="muted">Nárokov 100%: <strong>${eligible}</strong> · Almost: <strong>${almost}</strong></div>
-    <div class="muted">Priorita podľa potenciálu: <strong>${top3 || '—'}</strong></div>
-    <div class="muted" style="margin-top:8px;"><strong>TOP dávka:</strong> ${topBenefit ? topBenefit.name : '—'} ${verdict ? `<span class="pill ${verdict.cls}" style="margin-left:6px;">${verdict.label}</span>` : ''}</div>
-    <div class="muted" style="margin-top:8px;"><strong>Odporúčané ďalšie kroky:</strong></div>
-    ${actionsHtml}
-    <div class="muted" style="margin-top:8px;"><strong>Checklist dokladov pre TOP dávku:</strong></div>
-    <ul class="missing">${docItems}</ul>
-  </article>`;
-}
-
-function syncConditionalFields() {
-  socialDebtWrap.classList.toggle('hidden', statusSelect.value !== 'szco');
+function moneyText(amount, fallback = '—') {
+  return typeof amount === 'number' && Number.isFinite(amount) ? EUR.format(amount) : fallback;
 }
 
 function getInput() {
   return {
-    status: document.getElementById('status').value,
+    status: statusInput.value,
     insured: document.getElementById('sicknessInsured').value === 'yes',
     sicknessDays2y: Number(document.getElementById('sicknessDays2y').value || 0),
     hasSocialDebt: document.getElementById('hasSocialDebt').value === 'yes',
-    hasUnemploymentInsurance: document.getElementById('status').value === 'employee'
-      ? true
-      : document.getElementById('hasUnemploymentInsurance').value === 'yes',
+    hasUnemploymentInsurance: document.getElementById('hasUnemploymentInsurance').value === 'yes',
     unemploymentDays4y: Number(document.getElementById('unemploymentDays4y').value || 0),
     registeredJobseeker: document.getElementById('registeredJobseeker').value === 'yes',
     pnDays: Number(document.getElementById('pnDays').value || 0),
@@ -320,14 +256,30 @@ function getInput() {
   };
 }
 
+function syncConditionalFields() {
+  const status = statusInput.value;
+  socialDebtWrap.classList.toggle('hidden', status !== 'szco');
+  registeredJobseekerWrap.classList.toggle('hidden', status !== 'unemployed');
+
+  if (status !== 'szco') document.getElementById('hasSocialDebt').value = 'no';
+  if (status === 'unemployed') {
+    document.getElementById('registeredJobseeker').value = 'yes';
+  } else {
+    document.getElementById('registeredJobseeker').value = 'no';
+  }
+  if (!['employee', 'szco', 'unemployed'].includes(status)) {
+    document.getElementById('hasUnemploymentInsurance').value = 'no';
+    document.getElementById('unemploymentDays4y').value = 0;
+  }
+}
+
 function applyInput(input) {
   if (!input) return;
-
-  document.getElementById('status').value = input.status || 'employee';
+  statusInput.value = input.status || 'employee';
   document.getElementById('sicknessInsured').value = input.insured ? 'yes' : 'no';
   document.getElementById('sicknessDays2y').value = input.sicknessDays2y ?? 730;
   document.getElementById('hasSocialDebt').value = input.hasSocialDebt ? 'yes' : 'no';
-  document.getElementById('hasUnemploymentInsurance').value = (input.status === 'employee' || input.hasUnemploymentInsurance) ? 'yes' : 'no';
+  document.getElementById('hasUnemploymentInsurance').value = input.hasUnemploymentInsurance ? 'yes' : 'no';
   document.getElementById('unemploymentDays4y').value = input.unemploymentDays4y ?? 0;
   document.getElementById('registeredJobseeker').value = input.registeredJobseeker ? 'yes' : 'no';
   document.getElementById('pnDays').value = input.pnDays ?? 30;
@@ -336,97 +288,8 @@ function applyInput(input) {
   document.getElementById('residencySr').value = input.residencySr ? 'yes' : 'no';
   document.getElementById('childrenCount').value = input.childrenCount ?? 0;
 
+  statusChoices.forEach((btn) => btn.classList.toggle('active', btn.dataset.status === statusInput.value));
   syncConditionalFields();
-  currentQuestion = 0;
-  renderQuestion();
-}
-
-function renderReview() {
-  const input = getInput();
-  const unemploymentInsuranceLabel = input.status === 'employee'
-    ? 'Poistenie v nezamestnanosti (zamestnanec): <strong>štandardne áno</strong>'
-    : `Poistenie v nezamestnanosti: <strong>${input.hasUnemploymentInsurance ? 'áno' : 'nie'}</strong>`;
-
-  reviewBox.innerHTML = `
-    Situácia: <strong>${statusLabel(input.status)}</strong><br/>
-    Nemocenské poistenie: <strong>${input.insured ? 'áno' : 'nie'}</strong><br/>
-    Dni nemocenského poistenia: <strong>${input.sicknessDays2y}</strong><br/>
-    ${unemploymentInsuranceLabel} · dni: <strong>${input.unemploymentDays4y}</strong><br/>
-    Evidencia na úrade práce: <strong>${input.registeredJobseeker ? 'áno' : 'nie'}</strong><br/>
-    <span class="muted">Pozn.: pre dávku v nezamestnanosti je evidencia na úrade práce štandardná podmienka.</span>
-  `;
-}
-
-function questionFieldId(labelEl) {
-  const control = labelEl.querySelector('select, input');
-  return control ? control.id : null;
-}
-
-function isQuestionRelevant(labelEl) {
-  const id = questionFieldId(labelEl);
-  const status = statusSelect.value;
-
-  if (id === 'hasSocialDebt') return status === 'szco';
-  if (id === 'registeredJobseeker') return status === 'unemployed';
-  if (id === 'hasUnemploymentInsurance') {
-    return ['szco', 'unemployed'].includes(status);
-  }
-  if (id === 'unemploymentDays4y') {
-    return ['employee', 'szco', 'unemployed'].includes(status);
-  }
-
-  return true;
-}
-
-function visibleQuestions() {
-  return questions.filter((q) => isQuestionRelevant(q));
-}
-
-function updateStepDots(activeLabel) {
-  const step = Number(activeLabel.closest('.form-step').dataset.step);
-  dotEls.forEach((el, idx) => el.classList.toggle('active', idx + 1 <= step));
-}
-
-function renderQuestion() {
-  questions.forEach((q) => q.classList.add('hidden'));
-  document.querySelectorAll('.form-step').forEach((fieldset) => fieldset.classList.add('hidden'));
-
-  const vq = visibleQuestions();
-  const inReview = currentQuestion >= vq.length;
-
-  if (!inReview) {
-    const safeIndex = Math.max(0, Math.min(vq.length - 1, currentQuestion));
-    currentQuestion = safeIndex;
-    const activeQuestion = vq[safeIndex];
-    if (activeQuestion) {
-      activeQuestion.classList.remove('hidden');
-      activeQuestion.closest('.form-step').classList.remove('hidden');
-      updateStepDots(activeQuestion);
-    }
-  }
-
-  const reviewStep = document.querySelector('.form-step[data-step="4"]');
-  reviewStep.classList.toggle('hidden', !inReview);
-  if (inReview) {
-    dotEls.forEach((el) => el.classList.add('active'));
-    renderReview();
-  }
-
-  const isFirst = currentQuestion === 0;
-  prevStepBtn.disabled = isFirst;
-  prevStepBtn.classList.toggle('hidden', isFirst);
-  nextStepBtn.classList.toggle('hidden', inReview);
-  submitBtn.classList.toggle('hidden', !inReview);
-}
-
-function goNext() {
-  currentQuestion += 1;
-  renderQuestion();
-}
-
-function goPrev() {
-  if (currentQuestion > 0) currentQuestion -= 1;
-  renderQuestion();
 }
 
 function saveDraft() {
@@ -443,39 +306,129 @@ function loadDraft() {
   }
 }
 
-statusSelect.addEventListener('change', () => {
-  const status = statusSelect.value;
+function recommendationLines(input, benefits) {
+  const top = benefits.slice(0, 3);
+  const lines = [];
 
-  if (status !== 'szco') document.getElementById('hasSocialDebt').value = 'no';
+  if (top[0]) lines.push(`Najsilnejší kandidát je ${top[0].name} — ${statusFromScore(top[0].score).label.toLowerCase()}.`);
+  if (STATUS_GUIDANCE[input.status]) lines.push(STATUS_GUIDANCE[input.status]);
 
-  if (status === 'unemployed') {
-    document.getElementById('registeredJobseeker').value = 'yes';
-  } else {
-    document.getElementById('registeredJobseeker').value = 'no';
-  }
+  top.forEach((benefit) => {
+    const firstMissing = benefit.missing[0];
+    if (firstMissing) lines.push(`${benefit.name}: najbližší krok je ${firstMissing.toLowerCase()}.`);
+  });
 
-  // Konzistentné defaulty podľa typu situácie
-  if (status === 'employee') {
-    // zamestnanec je typicky povinne poistený v nezamestnanosti
-    document.getElementById('hasUnemploymentInsurance').value = 'yes';
-  }
-  if (status === 'szco') {
-    // SZČO typicky nie je poistená v nezamestnanosti, iba dobrovoľne
-    document.getElementById('hasUnemploymentInsurance').value = 'no';
-  }
+  return lines.slice(0, 4);
+}
 
-  if (!['employee', 'szco', 'unemployed'].includes(status)) {
-    document.getElementById('hasUnemploymentInsurance').value = 'no';
-    document.getElementById('unemploymentDays4y').value = 0;
-  }
+function renderSummary(input, benefits) {
+  const top3 = benefits.slice(0, 3);
+  const totalPotential = benefits.reduce((sum, benefit) => sum + estimatedPotential(benefit), 0);
+  const highChance = benefits.filter((benefit) => benefit.score >= 100).length;
+  const mediumChance = benefits.filter((benefit) => benefit.score >= 60 && benefit.score < 100).length;
+  const lines = recommendationLines(input, benefits);
 
-  currentQuestion = 0;
-  syncConditionalFields();
-  renderQuestion();
+  resultsSummary.innerHTML = `
+    <article class="summary-card">
+      <div class="row-between">
+        <div>
+          <h2>Na čo môžeš mať nárok</h2>
+          <div class="muted">Profil: <strong>${statusLabel(input.status)}</strong> · Orientačný výsledok pre tvoj prípad</div>
+        </div>
+        <span class="pill info-pill">Výsledok za pár klikov</span>
+      </div>
+
+      <div class="summary-grid">
+        <div class="metric"><strong>${moneyText(totalPotential)}</strong><span>Orientačný potenciál spolu</span></div>
+        <div class="metric"><strong>${highChance}</strong><span>Nároky s vysokou šancou</span></div>
+        <div class="metric"><strong>${mediumChance}</strong><span>Nároky so strednou šancou</span></div>
+        <div class="metric"><strong>${top3[0] ? top3[0].name : '—'}</strong><span>Najsilnejší kandidát</span></div>
+      </div>
+
+      <div class="next-steps-box">
+        <h3>Čo spraviť teraz</h3>
+        <ul>${lines.map((line) => `<li>${line}</li>`).join('')}</ul>
+      </div>
+    </article>
+  `;
+}
+
+function benefitCard(benefit, idx) {
+  const status = statusFromScore(benefit.score);
+  const rankPill = idx < 3 ? `<span class="pill info-pill">TOP ${idx + 1}</span>` : '';
+  const missing = benefit.missing.length
+    ? `<ul class="missing">${benefit.missing.map((item) => `<li>${item}</li>`).join('')}</ul>`
+    : '<div class="muted">Momentálne nevidím kritické chýbajúce položky.</div>';
+
+  return `
+    <article class="result-card">
+      <div class="result-top">
+        <div>
+          <h3 class="result-title">${benefit.name}</h3>
+          <div class="institution">Kam to typicky patrí: ${benefit.institution}</div>
+        </div>
+        <div>${rankPill} <span class="pill ${status.cls}">${status.label}</span></div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress"><span style="width:${benefit.score}%"></span></div>
+        <div class="progress-text">Orientačná šanca: <strong>${benefit.score}%</strong></div>
+      </div>
+
+      <div class="meta-list">
+        <div><strong>Odhad mesačne:</strong> ${moneyText(benefit.estimateMonthly, 'Neurčené')}</div>
+        <div><strong>Potenciál spolu:</strong> ${moneyText(estimatedPotential(benefit))}</div>
+        <div><strong>Prečo to dáva zmysel:</strong> ${benefit.extra}</div>
+      </div>
+
+      <div class="result-section">
+        <h4>Čo ti chýba</h4>
+        ${missing}
+      </div>
+
+      <div class="result-section">
+        <h4>Čo spraviť ďalej</h4>
+        <ul class="checklist">
+          <li>${benefit.action}</li>
+          <li>${benefit.formHint}</li>
+        </ul>
+      </div>
+    </article>
+  `;
+}
+
+function renderLeadCta(input, benefits) {
+  const top = benefits[0];
+  const topName = top ? top.name : 'výsledok';
+  leadCta.innerHTML = `
+    <h3>Chceš presný checklist a ďalší postup?</h3>
+    <p>Momentálne ti najviac vychádza <strong>${topName}</strong>. Ďalší krok pre tento MVP je doplniť presný checklist dokladov a konkrétny postup, čo kde podať.</p>
+    <div class="lead-cta-actions">
+      <button type="button" class="secondary">Chcem presný checklist</button>
+      <button type="button" class="secondary">Chcem pomoc s ďalším krokom</button>
+      <button type="button" class="secondary">Poslať si výsledok neskôr</button>
+    </div>
+  `;
+  leadCta.classList.remove('hidden');
+}
+
+function renderResults(input) {
+  const prioritized = prioritizeBenefits(evaluateBenefits(input));
+  renderSummary(input, prioritized);
+  resultsList.innerHTML = prioritized.map((benefit, idx) => benefitCard(benefit, idx)).join('');
+  renderLeadCta(input, prioritized);
+  resultsShell.classList.remove('hidden');
+  resultsActions.classList.remove('hidden');
+  exportPdfBtn.classList.remove('hidden');
+}
+
+statusChoices.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    statusInput.value = btn.dataset.status;
+    statusChoices.forEach((item) => item.classList.toggle('active', item === btn));
+    syncConditionalFields();
+  });
 });
-
-prevStepBtn.addEventListener('click', goPrev);
-nextStepBtn.addEventListener('click', goNext);
 
 prefillSzcoBtn.addEventListener('click', () => {
   applyInput({
@@ -483,7 +436,7 @@ prefillSzcoBtn.addEventListener('click', () => {
     insured: true,
     sicknessDays2y: 730,
     hasSocialDebt: false,
-    monthlyBase: 1300,
+    monthlyBase: 1600,
     pnDays: 30,
     ocrDays: 14,
     hasUnemploymentInsurance: false,
@@ -500,40 +453,36 @@ prefillUnemployedBtn.addEventListener('click', () => {
     insured: false,
     sicknessDays2y: 120,
     hasSocialDebt: false,
-    monthlyBase: 900,
+    monthlyBase: 1200,
     pnDays: 30,
     ocrDays: 14,
     hasUnemploymentInsurance: true,
-    unemploymentDays4y: 730,
+    unemploymentDays4y: 900,
     registeredJobseeker: true,
     residencySr: true,
     childrenCount: 0,
   });
 });
 
-saveDraftBtn?.addEventListener('click', () => {
+saveDraftBtn.addEventListener('click', () => {
   saveDraft();
   saveDraftBtn.textContent = 'Uložené ✓';
-  setTimeout(() => { saveDraftBtn.textContent = 'Uložiť rozpracované'; }, 1200);
+  setTimeout(() => { saveDraftBtn.textContent = 'Uložiť'; }, 1200);
 });
 
-loadDraftBtn?.addEventListener('click', () => {
+loadDraftBtn.addEventListener('click', () => {
   loadDraft();
 });
 
 form.addEventListener('submit', (e) => {
   e.preventDefault();
   const input = getInput();
-  const prioritized = prioritizeBenefits(evaluateBenefits(input));
-  results.innerHTML = [summaryCards(input, prioritized), ...prioritized.map((benefit, idx) => benefitCard(benefit, idx))].join('');
-  exportPdfBtn.classList.remove('hidden');
   saveDraft();
+  renderResults(input);
+  resultsShell.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
-exportPdfBtn.addEventListener('click', () => {
-  window.print();
-});
+exportPdfBtn.addEventListener('click', () => window.print());
 
 syncConditionalFields();
 loadDraft();
-renderQuestion();

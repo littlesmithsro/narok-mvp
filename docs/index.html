@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NAROK — zisti, na čo môžeš mať nárok</title>
-  <link rel="stylesheet" href="./styles.css?v=20260308-apple1" />
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <div class="bg"></div>
@@ -13,165 +13,171 @@
     <div class="topbar-inner">
       <div class="brand">NAROK</div>
       <nav class="menu">
-        <a href="#form">Kalkulačka</a>
-        <a href="#results">Výsledky</a>
+        <a href="#intake">Zisti nárok</a>
+        <a href="#results">Výsledok</a>
       </nav>
     </div>
   </header>
 
   <main class="wrap">
     <section class="hero card-soft">
-      <div>
-        <h1>Zisti, na aké dávky môžeš mať nárok</h1>
-        <p>Za 2–3 minúty dostaneš orientačný výsledok + jasné kroky, čo urobiť ďalej. Bez zložitého úradníckeho jazyka.</p>
+      <div class="hero-copy">
+        <span class="eyebrow">Sociálne dávky a podpora na Slovensku</span>
+        <h1>Zisti, na čo môžeš mať nárok — za pár klikov.</h1>
+        <p>Namiesto chaosu dostaneš jednoduchý prehľad: ktoré dávky a podpory dávajú zmysel, akú máš šancu ich dostať, čo ti chýba a čo máš spraviť ďalej.</p>
+        <div class="hero-cta-row">
+          <a href="#intake" class="cta-link">Začať výpočet</a>
+          <span class="hero-note">Orientačný výstup, nie právne záväzné rozhodnutie.</span>
+        </div>
       </div>
-      <div class="hero-kpis">
-        <div><strong>2–3 min</strong><span>rýchly orientačný prehľad</span></div>
-        <div><strong>Jednoduché otázky</strong><span>zrozumiteľne pre bežného človeka</span></div>
-        <div><strong>Konkrétne kroky</strong><span>čo riešiť hneď teraz</span></div>
+      <div class="hero-panel">
+        <div class="hero-stat"><strong>2 minúty</strong><span>na základný prehľad</span></div>
+        <div class="hero-stat"><strong>Top nároky</strong><span>zoradené podľa peňazí a šance</span></div>
+        <div class="hero-stat"><strong>Ďalší krok</strong><span>čo doplniť a kam sa obrátiť</span></div>
       </div>
     </section>
 
-    <section class="journey card-soft" aria-label="Ako to funguje">
-      <article><strong>1) Vyplníš údaje</strong><span>Krátke otázky o tvojej situácii.</span></article>
-      <article><strong>2) Spočítame šance</strong><span>Orientačné skóre pre jednotlivé dávky.</span></article>
-      <article><strong>3) Zobrazíme priority</strong><span>Čo sa oplatí riešiť ako prvé.</span></article>
-      <article><strong>4) Dostaneš kroky</strong><span>Konkrétne „čo spraviť teraz“.</span></article>
+    <section class="value-grid">
+      <article class="value-card card-soft">
+        <strong>1. Povieš, kto si</strong>
+        <span>Zamestnanec, SZČO, nezamestnaný, rodič…</span>
+      </article>
+      <article class="value-card card-soft">
+        <strong>2. Vyplníš pár údajov</strong>
+        <span>Poistenie, príjem, deti, evidencia, dlh.</span>
+      </article>
+      <article class="value-card card-soft">
+        <strong>3. Dostaneš výsledok</strong>
+        <span>Šanca, odhad, čo chýba a čo spraviť ďalej.</span>
+      </article>
     </section>
 
-    <section class="steps" aria-label="Kroky formulára">
-      <span class="step active" data-dot="1">1. Profil</span>
-      <span class="step" data-dot="2">2. Poistenie</span>
-      <span class="step" data-dot="3">3. Domácnosť</span>
-      <span class="step" data-dot="4">4. Kontrola</span>
-    </section>
-
-    <section id="form" class="card form-card">
-      <div class="section-head">
-        <h2>Kalkulačka nárokov</h2>
-        <p class="muted">Vyplň údaje jednoduchým jazykom. Výsledok je orientačný (finálny nárok potvrdzuje úrad/poisťovňa).</p>
+    <section id="intake" class="intake-shell card">
+      <div class="section-head compact-head">
+        <div>
+          <h2>Tvoj rýchly nárokový prehľad</h2>
+          <p class="muted">Vyplň len to, čo najviac vplýva na nárok. Tlačidlo na pokračovanie ostáva stále na jednom mieste.</p>
+        </div>
+        <div class="intake-badges">
+          <span class="badge">Pár údajov</span>
+          <span class="badge">Výsledok hneď</span>
+          <span class="badge">Jasné ďalšie kroky</span>
+        </div>
       </div>
 
-      <form id="eligibilityForm">
-        <fieldset class="group form-step" data-step="1">
-          <legend>1) Profil osoby</legend>
-          <div class="grid">
-            <label>
-              Aktuálna situácia
-              <select id="status" required>
-                <option value="employee">Zamestnanec</option>
-                <option value="szco">SZČO (živnostník)</option>
-                <option value="unemployed">Nezamestnaný</option>
-                <option value="parental">Rodič / rodičovská</option>
-                <option value="student">Študent</option>
-                <option value="other">Iné</option>
-              </select>
-            </label>
-            <label>
-              Pobyt / väzba na SR
-              <select id="residencySr" required>
-                <option value="yes">Áno</option>
-                <option value="no">Nie</option>
-              </select>
-            </label>
-          </div>
-        </fieldset>
+      <form id="eligibilityForm" class="intake-form">
+        <div class="intake-grid">
+          <label class="field span-2 status-field">
+            <span>Kto si?</span>
+            <div class="choice-grid" id="statusChoices">
+              <button type="button" class="choice-pill active" data-status="employee">Zamestnanec</button>
+              <button type="button" class="choice-pill" data-status="szco">SZČO</button>
+              <button type="button" class="choice-pill" data-status="unemployed">Nezamestnaný</button>
+              <button type="button" class="choice-pill" data-status="parental">Rodič / rodičovská</button>
+              <button type="button" class="choice-pill" data-status="student">Študent</button>
+              <button type="button" class="choice-pill" data-status="other">Iné</button>
+            </div>
+            <input id="status" type="hidden" value="employee" />
+          </label>
 
-        <fieldset class="group form-step hidden" data-step="2">
-          <legend>2) Poistenie a príjem</legend>
-          <div class="grid">
-            <label>
-              Aktívne nemocenské poistenie
-              <select id="sicknessInsured" required>
-                <option value="yes">Áno</option>
-                <option value="no">Nie</option>
-              </select>
-            </label>
-            <label>
-              Dni nemocenského poistenia za posledné 2 roky
-              <input id="sicknessDays2y" type="number" min="0" value="730" required />
-            </label>
-            <label id="socialDebtWrap">
-              Máš nedoplatky na sociálnom poistení?
-              <select id="hasSocialDebt" required>
-                <option value="no">Nie</option>
-                <option value="yes">Áno / neviem</option>
-              </select>
-            </label>
-            <label>
-              Tvoj priemerný hrubý mesačný príjem (v €)
-              <small class="hint">Ak nevieš presne, použi orientačný priemer za posledné mesiace.</small>
-              <input id="monthlyBase" type="number" min="0" step="0.01" value="1300" required />
-            </label>
-            <label>
-              Koľko dní PN chceš rátať
-              <input id="pnDays" type="number" min="1" max="365" value="30" required />
-            </label>
-            <label>
-              Koľko dní OČR chceš rátať
-              <input id="ocrDays" type="number" min="1" max="365" value="14" required />
-            </label>
-            <label>
-              Máš dobrovoľné poistenie v nezamestnanosti?
-              <small class="hint">Pre zamestnanca sa štandardne ráta povinné poistenie. Túto voľbu riešime hlavne pre SZČO.</small>
-              <select id="hasUnemploymentInsurance" required>
-                <option value="no">Nie</option>
-                <option value="yes">Áno</option>
-              </select>
-            </label>
-            <label>
-              Dni poistenia v nezamestnanosti za posledné 4 roky
-              <input id="unemploymentDays4y" type="number" min="0" value="0" required />
-            </label>
-            <label>
-              Si evidovaný(á) na úrade práce? (podmienka pre dávku v nezamestnanosti)
-              <select id="registeredJobseeker" required>
-                <option value="yes">Áno</option>
-                <option value="no">Nie</option>
-              </select>
-            </label>
-          </div>
-        </fieldset>
+          <label class="field">
+            <span>Pobyt / väzba na SR</span>
+            <select id="residencySr">
+              <option value="yes">Áno</option>
+              <option value="no">Nie</option>
+            </select>
+          </label>
 
-        <fieldset class="group form-step hidden" data-step="3">
-          <legend>3) Domácnosť</legend>
-          <div class="grid">
-            <label>
-              Počet detí
-              <input id="childrenCount" type="number" min="0" value="0" required />
-            </label>
-          </div>
-        </fieldset>
+          <label class="field">
+            <span>Aktívne nemocenské poistenie</span>
+            <select id="sicknessInsured">
+              <option value="yes">Áno</option>
+              <option value="no">Nie</option>
+            </select>
+          </label>
 
-        <fieldset class="group form-step hidden" data-step="4">
-          <legend>4) Kontrola pred výpočtom</legend>
-          <p class="muted">Skontroluj údaje a klikni na „Vypočítať nároky“.</p>
-          <div id="reviewBox" class="review-box muted"></div>
-        </fieldset>
+          <label class="field">
+            <span>Dni nemocenského poistenia za 2 roky</span>
+            <input id="sicknessDays2y" type="number" min="0" value="730" />
+          </label>
 
-        <div class="wizard-nav">
-          <button type="button" id="prevStep" class="secondary">← Späť</button>
-          <button type="button" id="nextStep" class="secondary">Ďalej →</button>
+          <label class="field" id="socialDebtWrap">
+            <span>Nedoplatky na sociálnom poistení</span>
+            <select id="hasSocialDebt">
+              <option value="no">Nie</option>
+              <option value="yes">Áno / neviem</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Priemerný mesačný základ (EUR)</span>
+            <input id="monthlyBase" type="number" min="0" step="0.01" value="1300" />
+          </label>
+
+          <label class="field">
+            <span>Poistenie v nezamestnanosti</span>
+            <select id="hasUnemploymentInsurance">
+              <option value="no">Nie</option>
+              <option value="yes">Áno</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Dni poistenia v nezamestnanosti za 4 roky</span>
+            <input id="unemploymentDays4y" type="number" min="0" value="0" />
+          </label>
+
+          <label class="field" id="registeredJobseekerWrap">
+            <span>Evidencia na úrade práce</span>
+            <select id="registeredJobseeker">
+              <option value="yes">Áno</option>
+              <option value="no">Nie</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Počet detí</span>
+            <input id="childrenCount" type="number" min="0" value="0" />
+          </label>
+
+          <label class="field compact-field">
+            <span>Koľko dní PN chceš rátať</span>
+            <input id="pnDays" type="number" min="1" max="365" value="30" />
+          </label>
+
+          <label class="field compact-field">
+            <span>Koľko dní OČR chceš rátať</span>
+            <input id="ocrDays" type="number" min="1" max="365" value="14" />
+          </label>
         </div>
 
-        <div class="actions">
-          <button type="button" id="prefillSzcoProfile" class="secondary">Predvyplniť: 5 rokov SZČO</button>
-          <button type="button" id="prefillUnemployedProfile" class="secondary">Predvyplniť: nezamestnaný</button>
-          <button type="button" id="saveDraftBtn" class="secondary">Uložiť rozpracované</button>
-          <button type="button" id="loadDraftBtn" class="secondary">Načítať rozpracované</button>
-          <button type="submit" id="submitBtn">Vypočítať nároky</button>
-          <button type="button" id="exportPdfBtn" class="secondary hidden">Export PDF</button>
+        <div class="sticky-actions">
+          <div class="quick-actions">
+            <button type="button" id="prefillSzcoProfile" class="secondary">Predvyplniť SZČO</button>
+            <button type="button" id="prefillUnemployedProfile" class="secondary">Predvyplniť nezamestnaný</button>
+            <button type="button" id="saveDraftBtn" class="secondary">Uložiť</button>
+            <button type="button" id="loadDraftBtn" class="secondary">Načítať</button>
+          </div>
+          <button type="submit" id="submitBtn" class="primary big-submit">Zisti, na čo môžeš mať nárok</button>
         </div>
       </form>
     </section>
 
-    <section id="results" class="results"></section>
+    <section id="results" class="results-shell hidden">
+      <div id="resultsSummary" class="results-summary"></div>
+      <div id="resultsList" class="results-list"></div>
+      <div id="leadCta" class="lead-cta card hidden"></div>
+      <div class="results-footer-actions hidden" id="resultsActions">
+        <button type="button" id="exportPdfBtn" class="secondary">Export PDF</button>
+        <a href="#intake" class="secondary-link">Upraviť údaje</a>
+      </div>
+    </section>
 
     <section class="note card-soft">
-      <strong>Dôležité:</strong> Toto je orientačný MVP výpočet. Finálny nárok vždy potvrdzuje Sociálna poisťovňa / ÚPSVaR.
+      <strong>Dôležité:</strong> Výsledok je orientačný. Finálny nárok a presný postup vždy potvrdzuje príslušná inštitúcia (Sociálna poisťovňa / ÚPSVaR a pod.).
     </section>
   </main>
 
-  <script src="./app.js?v=20260307-3"></script>
+  <script src="./app.js?v=20260309-redesign-1"></script>
 </body>
 </html>
