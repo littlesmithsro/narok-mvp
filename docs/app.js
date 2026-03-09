@@ -10,8 +10,8 @@ const STATUS_LABELS = {
   other: 'Iné',
 };
 
-const RULES_VERSION = 'v1.3';
-const RULES_UPDATED_AT = '2026-03-08';
+const RULES_VERSION = 'v1.5';
+const RULES_UPDATED_AT = '2026-03-09';
 
 const REQUIRED_DOCS = {
   pn: ['Potvrdenie o PN od lekára', 'Občiansky preukaz', 'Údaje o poistení (Sociálna poisťovňa)'],
@@ -36,11 +36,14 @@ const benefitDefinitions = [
 
       score += input.insured ? 40 : 0;
       score += scoreByRatio(input.sicknessDays2y, 270, 40);
-      score += input.status === 'szco' ? (input.hasSocialDebt ? 0 : 20) : 20;
+
+      if (input.status === 'employee') score += 20;
+      if (input.status === 'szco' && !input.hasSocialDebt) score += 20;
 
       if (!input.insured) missing.push('Aktívne nemocenské poistenie');
       if (input.sicknessDays2y < 270) missing.push(`Doplniť dni poistenia (${input.sicknessDays2y}/270)`);
       if (input.status === 'szco' && input.hasSocialDebt) missing.push('Vysporiadať nedoplatky na sociálnom poistení');
+      if (!['employee', 'szco'].includes(input.status)) missing.push('PN/OČR je typicky viazaná na aktívne nemocenské poistenie');
 
       const eligible = score >= 100;
       const dvz = dailyBase(input.monthlyBase);
@@ -70,11 +73,14 @@ const benefitDefinitions = [
 
       score += input.insured ? 40 : 0;
       score += scoreByRatio(input.sicknessDays2y, 270, 40);
-      score += input.status === 'szco' ? (input.hasSocialDebt ? 0 : 20) : 20;
+
+      if (input.status === 'employee') score += 20;
+      if (input.status === 'szco' && !input.hasSocialDebt) score += 20;
 
       if (!input.insured) missing.push('Aktívne nemocenské poistenie');
       if (input.sicknessDays2y < 270) missing.push(`Doplniť dni poistenia (${input.sicknessDays2y}/270)`);
       if (input.status === 'szco' && input.hasSocialDebt) missing.push('Vysporiadať nedoplatky na sociálnom poistení');
+      if (!['employee', 'szco'].includes(input.status)) missing.push('PN/OČR je typicky viazaná na aktívne nemocenské poistenie');
 
       const eligible = score >= 100;
       const dvz = dailyBase(input.monthlyBase);
@@ -99,15 +105,16 @@ const benefitDefinitions = [
       let score = 0;
       const missing = [];
 
-      score += input.registeredJobseeker ? 30 : 0;
+      score += input.registeredJobseeker ? 40 : 0;
       score += input.hasUnemploymentInsurance ? 30 : 0;
-      score += scoreByRatio(input.unemploymentDays4y, 730, 40);
+      score += scoreByRatio(input.unemploymentDays4y, 730, 30);
 
+      if (input.status !== 'unemployed') missing.push('Pre dávku v nezamestnanosti je potrebná evidencia na úrade práce (profil: Nezamestnaný)');
       if (!input.registeredJobseeker) missing.push('Evidencia na úrade práce');
       if (!input.hasUnemploymentInsurance) missing.push('Poistenie v nezamestnanosti');
       if (input.unemploymentDays4y < 730) missing.push(`Doplniť dni poistenia (${input.unemploymentDays4y}/730)`);
 
-      const eligible = score >= 100;
+      const eligible = score >= 100 && input.status === 'unemployed' && input.registeredJobseeker;
       const dvz = dailyBase(input.monthlyBase);
       const monthly = eligible ? dvz * 0.5 * 30.4167 : 0;
       const months = eligible ? 6 : 0;
@@ -119,7 +126,7 @@ const benefitDefinitions = [
         estimateTotal: monthly * months,
         extra: eligible
           ? `Trvanie: ${months} mesiacov · Celkom: ${EUR.format(monthly * months)}`
-          : 'Štandardne 6 mesiacov po splnení podmienok.',
+          : 'Štandardne 6 mesiacov po splnení podmienok (orientačné, finálne rozhoduje Sociálna poisťovňa).',
       };
     },
   },
